@@ -12,8 +12,6 @@ Two small helpers that give matplotlib figures a publication-ready look:
 - `ax_setting3D()` turns a 3D axes into a clean orthographic box with explicit
   tick positions and a grey back edge.
 
-![Demo figure: 2D lines and a 3D surface rendered with my-mpl-style](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/demo.png)
-
 ## Installation
 
 ```bash
@@ -21,6 +19,32 @@ pip install my-mpl-style
 ```
 
 Requires Python 3.10+ and matplotlib 3.5+.
+
+## Example
+
+**2D lines and a 3D surface** — [`examples/demo.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/demo.py)
+
+![2D lines and a 3D surface rendered with the default my-mpl-style preset](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/demo.png)
+
+The default preset (serif text, Computer Modern math, the six-colour cycle,
+light grid) combined with an orthographic `ax_setting3D()` box.
+
+**Intersecting planes** — [`examples/Intersecting_planes.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/Intersecting_planes.py)
+
+![Three orthogonal colour slices drawn inside one 3D box](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/intersecting_planes.png)
+
+Three orthogonal colour slices inside a single 3D box, each drawn with
+`contourf` and a shared colour bar.
+
+**Isosurfaces** — [`examples/isosurface.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/isosurface.py)
+
+![Marching-cubes isosurfaces of phase-field snapshots](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/isosurface.png)
+
+Marching-cubes isosurfaces of the phase-field snapshots in
+[`data/`](https://github.com/guessable/my-mpl-style/tree/main/data), shaded with
+a `LightSource`. This example needs `scikit-image` (install with
+`pip install "my-mpl-style[examples]"`) and the `data/*.npz` files from the
+repository.
 
 ## Quick start
 
@@ -161,7 +185,7 @@ grey back edge of the box.
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # Windows
-pip install -e ".[dev]"
+pip install -e ".[dev,examples]"
 
 pytest
 python examples/demo.py          # regenerate docs/images/demo.png

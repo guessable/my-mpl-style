@@ -42,6 +42,7 @@ Changelog = "https://github.com/guessable/my-mpl-style/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "twine>=5", "pytest>=8", "numpy>=1.24"]
+examples = ["numpy>=1.24", "scikit-image>=0.20"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }

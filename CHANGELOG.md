@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Two new examples with rendered figures: `examples/Intersecting_planes.py`
+  (orthogonal colour slices in one 3D box) and `examples/isosurface.py`
+  (marching-cubes isosurfaces of phase-field snapshots).
+- `examples` optional dependency (`numpy`, `scikit-image`) for the isosurface
+  example.
+
+### Documentation
+
+- README gains an "Example" section showing all three example figures.
+
 ## [0.2.1] - 2026-10-20
 
 ### Documentation
