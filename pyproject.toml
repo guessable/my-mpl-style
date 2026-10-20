@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "my-mpl-style"
-version = "0.1.0"
+version = "0.2.1"
 description = "Publication-oriented matplotlib rcParams presets and 3D axes helpers."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,6 +33,12 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = ["matplotlib>=3.5"]
+
+[project.urls]
+Homepage = "https://github.com/guessable/my-mpl-style"
+Repository = "https://github.com/guessable/my-mpl-style"
+Issues = "https://github.com/guessable/my-mpl-style/issues"
+Changelog = "https://github.com/guessable/my-mpl-style/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "twine>=5", "pytest>=8", "numpy>=1.24"]

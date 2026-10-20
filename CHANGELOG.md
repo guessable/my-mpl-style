@@ -1,0 +1,40 @@
+# Changelog
+
+All notable changes to this project are documented here. The format loosely
+follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
+[Semantic Versioning](https://semver.org/).
+
+## [0.2.1] - 2026-10-20
+
+### Documentation
+
+- README embeds the demo figure with an absolute URL, so it renders on both
+  GitHub and PyPI; the license and changelog links are absolute too.
+- `pyproject.toml` publishes the homepage, repository, issues and changelog
+  URLs now that the project lives at
+  <https://github.com/guessable/my-mpl-style>.
+
+## [0.2.0] - 2026-10-20
+
+### Added
+
+- `plot_rc()` gains `save_dpi`, `save_bbox` and `save_pad_inches`, which preset
+  the `savefig` defaults (300 dpi, tight bounding box, 0.05 in padding) so
+  `fig.savefig("figure.png")` is print-ready without extra arguments.
+- `plot_rc()` gains `font_family` and `font_serif` to choose the font stack.
+
+### Changed
+
+- **Breaking:** `ax_setting3D()` now requires `xticks`, `yticks` and `zticks`.
+  Callers that set ticks with `ax.set(xticks=...)` must pass them to
+  `ax_setting3D()` instead, so that limits, ticks and the grey back edge are
+  computed from the same final axes state.
+- Type hints tightened: `font_serif` is a `Sequence[str]` with an immutable
+  tuple default, `save_bbox` is a `Literal["tight", "standard"]`, tick
+  arguments accept any `Sequence[float]`, and `ax` is annotated as `Axes3D`.
+
+## [0.1.0] - 2026-10-19
+
+### Added
+
+- First public release: `plot_rc()` and `ax_setting3D()`.

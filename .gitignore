@@ -25,3 +25,5 @@ htmlcov/
 # Local scratch
 .cache/
 .tmp/
+.tmp-test/
+.testenv/
