@@ -36,13 +36,13 @@ def plot_isosurface(ax, x, y, z, phi, level=0):
     )
     ax.set_xlabel(r"$x$", labelpad=-5, fontsize=11)
     ax.set_ylabel(r"$y$", labelpad=-5, fontsize=11)
-    ax.set_zlabel(r"$z$", labelpad=-2, fontsize=11)
+    ax.set_zlabel(r"$z$", labelpad=-3, fontsize=11)
 
 
 if __name__ == "__main__":
     fig = plt.figure(figsize=(12.0, 4.2))
     axes = [fig.add_subplot(1, 3, index + 1, projection="3d") for index in range(3)]
-    fig.subplots_adjust(wspace=0.05)
+    fig.subplots_adjust(wspace=0.03)
 
     phi_mean = [-0.20, -0.35, -0.43]
 

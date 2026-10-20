@@ -174,18 +174,11 @@ checkout's code even when an older release is installed in site-packages.
 
 See [CHANGELOG.md](https://github.com/guessable/my-mpl-style/blob/main/CHANGELOG.md).
 
-## License
-
-MIT © 2026 chengtau
-
 ## Example
 
 **2D lines and a 3D surface** — [`examples/demo.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/demo.py)
 
 ![2D lines and a 3D surface rendered with the default my-mpl-style preset](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/demo.png)
-
-The default preset (serif text, Computer Modern math, the six-colour cycle,
-light grid) combined with an orthographic `ax_setting3D()` box.
 
 **Intersecting planes** — [`examples/Intersecting_planes.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/Intersecting_planes.py)
 
@@ -200,7 +193,17 @@ Three orthogonal colour slices inside a single 3D box, each drawn with
 
 Marching-cubes isosurfaces of the phase-field snapshots in
 [`data/`](https://github.com/guessable/my-mpl-style/tree/main/data), shaded with
-a `LightSource`. This example needs `scikit-image` (install with
-`pip install "my-mpl-style[examples]"`) and the `data/*.npz` files from the
-repository.
+a `LightSource`. This example needs `scikit-image` and the `data/*.npz` files
+from the repository.
+
+**Triangular surfaces** — [`examples/tri_surface.py`](https://github.com/guessable/my-mpl-style/blob/main/examples/tri_surface.py)
+
+![Colour-mapped and wireframe triangular meshes](https://raw.githubusercontent.com/guessable/my-mpl-style/main/docs/images/tri_surface.png)
+
+Triangular meshes loaded from `data/cheese.npz` and `data/peanut.npz`: a
+colour-mapped surface on the left and a shaded wireframe on the right.
+
+## License
+
+MIT © 2026 chengtau
 
