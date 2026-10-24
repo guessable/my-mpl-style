@@ -205,8 +205,12 @@ def ax_setting3D(
     if aspect not in ("auto", "equal"):
         raise ValueError("aspect must be 'auto' or 'equal'")
     axes = (ax.xaxis, ax.yaxis, ax.zaxis)
-    if not all(hasattr(axis, "_draw_ticks") and hasattr(axis, "_get_tickdir") for axis in axes):
-        raise RuntimeError("This style requires the mplot3d drawing hooks in Matplotlib >= 3.10")
+    if not all(
+        hasattr(axis, "_get_tickdir")
+        and (hasattr(axis, "_get_updated_ticks") or hasattr(axis, "_draw_ticks"))
+        for axis in axes
+    ):
+        raise RuntimeError("This style requires Matplotlib >= 3.10")
     lengths = {
         name: _finite_scalar(value, name + "tick_length", nonnegative=True)
         for name, value in zip("xyz", (xtick_length, ytick_length, ztick_length))
@@ -264,7 +268,8 @@ def ax_setting3D(
     geometry.matrix = None
     for name, length in lengths.items():
         axis = getattr(ax, name + "axis")
-        if isinstance(axis._draw_ticks, _AxisTickExtension):
-            axis._draw_ticks.length = length
+        extension = getattr(axis, "_style3d_extension", None)
+        if isinstance(extension, _AxisTickExtension):
+            extension.length = length
         else:
-            axis._draw_ticks = _AxisTickExtension(axis, length, geometry)
+            axis._style3d_extension = _AxisTickExtension(axis, length, geometry)

@@ -134,13 +134,13 @@ def test_ax_setting3d_installs_hooks_once():
 
     ax_setting3D(ax, *args, **ticks)
 
-    hooks = (ax.xaxis._draw_ticks, ax.yaxis._draw_ticks, ax.zaxis._draw_ticks)
+    hooks = (ax.xaxis._style3d_extension, ax.yaxis._style3d_extension, ax.zaxis._style3d_extension)
     assert all(isinstance(hook, _AxisTickExtension) for hook in hooks)
 
     ax_setting3D(ax, *args, **ticks, xtick_length=0.05)
 
-    assert (ax.xaxis._draw_ticks, ax.yaxis._draw_ticks, ax.zaxis._draw_ticks) == hooks
-    assert ax.xaxis._draw_ticks.length == pytest.approx(0.05)
+    assert (ax.xaxis._style3d_extension, ax.yaxis._style3d_extension, ax.zaxis._style3d_extension) == hooks
+    assert ax.xaxis._style3d_extension.length == pytest.approx(0.05)
 
     fig.canvas.draw()
     plt.close(fig)

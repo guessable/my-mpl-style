@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.2] - 2026-10-24
+
+### Fixed
+
+- Restored the outward tick direction that regressed in 0.3.1, while keeping
+  support for both mplot3d hook variants: `_draw_ticks` (matplotlib < 3.11.2)
+  and `_get_updated_ticks` (matplotlib >= 3.11.2).
+
+## [0.3.1] - 2026-10-24
+
+### Fixed
+
+- `ax_setting3D()` now works with matplotlib 3.11.2, where the private
+  `_draw_ticks` hook was replaced by `_get_updated_ticks`. Tick lengths and z
+  labels are applied by wrapping the tick line and label `draw` methods, which
+  works with both drawing implementations.
+
 ## [0.3.0] - 2026-10-24
 
 ### Added

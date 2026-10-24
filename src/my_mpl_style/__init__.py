@@ -21,4 +21,4 @@ Basic usage::
 from ._style import ax_setting3D, plot_rc
 
 __all__ = ["plot_rc", "ax_setting3D"]
-__version__ = "0.3.0"
+__version__ = "0.3.2"

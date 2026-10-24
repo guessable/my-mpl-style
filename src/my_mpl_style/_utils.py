@@ -3,8 +3,9 @@
 Nothing in this module is part of the public API; the two public functions
 live in :mod:`my_mpl_style._style`.
 
-The 3D helpers wrap private mplot3d draw hooks, so they are grouped here
-instead of cluttering the public module.
+The 3D helpers wrap mplot3d's private tick hooks. Matplotlib 3.11.2 replaced
+``_draw_ticks`` with ``_get_updated_ticks``; both signatures are supported so
+the style works from matplotlib 3.10 through 3.11.x.
 """
 
 from __future__ import annotations
@@ -74,20 +75,13 @@ class _TickLineDraw:
 
     def __call__(self, renderer):
         line, extension = self.line, self.extension
-        if line.get_visible():
+        if line.get_visible() and extension.pixel_length > 0:
             points = line.get_xydata()
             if len(points) == 2:
                 transform = line.get_transform()
                 projected = transform.transform(points)
                 anchor = projected[0]
-                direction = extension.label_direction
-                if np.any(extension.axis.axes.M[3, :3] != 0):
-                    # Perspective changes the projected direction at each tick.
-                    vector = projected[1] - projected[0]
-                    length = np.linalg.norm(vector)
-                    if length > 1e-9:
-                        direction = vector / length
-                endpoint = anchor + direction * extension.pixel_length
+                endpoint = anchor + extension.label_direction * extension.pixel_length
                 adjusted = transform.inverted().transform([anchor, endpoint])
                 line.set_data(adjusted[:, 0], adjusted[:, 1])
         return self.original(renderer)
@@ -138,8 +132,11 @@ class _AxisTickExtension:
 
     Tick lengths are recomputed from the projected axes at each draw, and
     z-axis labels follow the outer endpoints. X and y labels retain their
-    original positions and alignment. The draw hooks are installed on the
-    supplied axis instance.
+    original positions and alignment. The hook is installed on the supplied
+    axis instance and reused when the style is applied again.
+
+    Matplotlib 3.11.2 replaced ``_draw_ticks`` with ``_get_updated_ticks``;
+    the extension wraps whichever hook the running version provides.
 
     Parameters
     ----------
@@ -156,11 +153,19 @@ class _AxisTickExtension:
         self.length = length
         self.geometry = geometry
         self.pixel_length = 0.0
-        self.original = axis._draw_ticks
-        self.original_tickdir = axis._get_tickdir
         self.label_direction = np.array([-1.0, 0.0])
+        self.original_tickdir = axis._get_tickdir
         if axis.axis_name == "z":
             axis._get_tickdir = self._tickdir
+
+        if hasattr(axis, "_get_updated_ticks"):
+            self.original = axis._get_updated_ticks
+            axis._get_updated_ticks = self._updated_ticks
+        elif hasattr(axis, "_draw_ticks"):
+            self.original = axis._draw_ticks
+            axis._draw_ticks = self._draw_ticks
+        else:  # pragma: no cover - guarded by the caller as well
+            raise RuntimeError("This style requires Matplotlib >= 3.10")
 
     def _tickdir(self, position):
         # Preserve native x/y directions; extend z ticks along y.
@@ -168,7 +173,15 @@ class _AxisTickExtension:
             return 1
         return self.original_tickdir(position)
 
-    def __call__(self, renderer, edgep1, centers, deltas, highs, deltas_per_point, pos):
+    def _updated_ticks(self, edgep1, centers, deltas, highs, deltas_per_point, pos):
+        self._apply(edgep1, centers, deltas, highs, pos)
+        return self.original(edgep1, centers, deltas, highs, deltas_per_point, pos)
+
+    def _draw_ticks(self, renderer, edgep1, centers, deltas, highs, deltas_per_point, pos):
+        self._apply(edgep1, centers, deltas, highs, pos)
+        return self.original(renderer, edgep1, centers, deltas, highs, deltas_per_point, pos)
+
+    def _apply(self, edgep1, centers, deltas, highs, pos):
         axis = self.axis
         ax = axis.axes
         self.geometry.update(axis)
@@ -213,4 +226,3 @@ class _AxisTickExtension:
                 for text in (tick.label1, tick.label2):
                     if not isinstance(text.draw, _ZTickLabel):
                         text.draw = _ZTickLabel(self, tick, text)
-        return self.original(renderer, edgep1, centers, deltas, highs, deltas_per_point, pos)
