@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.3] - 2026-10-24
+
+### Changed
+
+- `ax_setting3D()` treats `xticks`, `yticks` and `zticks` as optional
+  arguments. When omitted or `None`, matplotlib's default locator ticks are
+  kept for that axis.
+
 ## [0.3.2] - 2026-10-24
 
 ### Fixed

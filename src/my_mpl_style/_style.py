@@ -112,9 +112,9 @@ def ax_setting3D(
     xlim: Sequence[float],
     ylim: Sequence[float],
     zlim: Sequence[float],
-    xticks: Sequence[float],
-    yticks: Sequence[float],
-    zticks: Sequence[float],
+    xticks: Sequence[float] | None = None,
+    yticks: Sequence[float] | None = None,
+    zticks: Sequence[float] | None = None,
     aspect: Literal["auto", "equal"] = "equal",
     box_aspect: Sequence[float] | None = None,
     xticks_pad: float = -5,
@@ -139,8 +139,9 @@ def ax_setting3D(
         A 3D axes created with ``projection="3d"``.
     xlim, ylim, zlim : sequence of float
         Axis limits.
-    xticks, yticks, zticks : sequence of float
-        Tick positions for each axis.
+    xticks, yticks, zticks : sequence of float or None, default: None
+        Tick positions for each axis. When an axis is ``None``, matplotlib's
+        default locator ticks are kept for that axis.
     aspect : {"auto", "equal"}, default: "equal"
         Data aspect passed to :meth:`~mpl_toolkits.mplot3d.axes3d.Axes3D.set_aspect`.
     box_aspect : sequence of float or None, default: None
@@ -162,7 +163,7 @@ def ax_setting3D(
     TypeError
         If ``ax`` is not a 3D axes.
     ValueError
-        If limits or ticks contain non-finite values, a tick length is
+        If limits or provided ticks contain non-finite values, a tick length is
         negative, or ``box_aspect`` does not contain three positive values.
 
     Notes
@@ -219,12 +220,14 @@ def ax_setting3D(
     limits, ticks = {}, {}
     for name, bounds, values in zip("xyz", (xlim, ylim, zlim), (xticks, yticks, zticks)):
         bounds = np.asarray(bounds, dtype=float)
-        values = np.asarray(values, dtype=float)
         if bounds.shape != (2,) or not np.isfinite(bounds).all():
             raise ValueError(f"{name}lim must contain two finite values")
-        if values.ndim != 1 or not np.isfinite(values).all():
-            raise ValueError(f"{name}ticks must be a one-dimensional finite sequence")
-        limits[name], ticks[name] = bounds.copy(), values.copy()
+        limits[name] = bounds.copy()
+        if values is not None:
+            values = np.asarray(values, dtype=float)
+            if values.ndim != 1 or not np.isfinite(values).all():
+                raise ValueError(f"{name}ticks must be a one-dimensional finite sequence")
+            ticks[name] = values.copy()
     if box_aspect is not None:
         box_aspect = np.array(box_aspect, dtype=float, copy=True)
         if box_aspect.shape != (3,) or not np.isfinite(box_aspect).all() or np.any(box_aspect <= 0):
@@ -247,7 +250,8 @@ def ax_setting3D(
 
     # Set ticks first: Matplotlib otherwise expands explicit limits to fit them.
     for name, axis in zip("xyz", axes):
-        axis.set_ticks(ticks[name])
+        if name in ticks:
+            axis.set_ticks(ticks[name])
         getattr(ax, "set_" + name + "lim")(limits[name])
     ax.set_aspect(aspect)
     if box_aspect is not None:

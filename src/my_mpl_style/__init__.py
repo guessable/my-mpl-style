@@ -4,8 +4,8 @@
 output look closer to a journal figure: :func:`plot_rc` applies a consistent
 rcParams preset (serif fonts, CM math, MATLAB-like colours, optional grid and
 inward ticks, 300 dpi tight-bbox saving), and :func:`ax_setting3D` turns a 3D
-axes into a MATLAB-like orthographic box with explicit tick positions and
-projected tick marks.
+axes into a MATLAB-like orthographic box with explicit or automatic tick
+positions and projected tick marks.
 
 Basic usage::
 
@@ -21,4 +21,4 @@ Basic usage::
 from ._style import ax_setting3D, plot_rc
 
 __all__ = ["plot_rc", "ax_setting3D"]
-__version__ = "0.3.2"
+__version__ = "0.3.3"

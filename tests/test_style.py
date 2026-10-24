@@ -169,6 +169,32 @@ def test_ax_setting3d_rejects_non_3d_axes():
     plt.close(fig)
 
 
+def test_ax_setting3d_ticks_are_optional():
+    fig, ax = _axes3d()
+
+    ax_setting3D(ax, (0, 1), (0, 1), (-1, 1), box_aspect=(1, 1, 1))
+
+    assert ax.get_xlim() == (0.0, 1.0)
+    assert ax.get_zlim() == (-1.0, 1.0)
+    fig.canvas.draw()
+    assert len(ax.get_xticks()) > 0
+    assert len(ax.get_yticks()) > 0
+    assert len(ax.get_zticks()) > 0
+    plt.close(fig)
+
+
+def test_ax_setting3d_accepts_partial_ticks():
+    fig, ax = _axes3d()
+
+    ax_setting3D(ax, (0, 1), (0, 1), (0, 1), xticks=[0, 0.5, 1])
+
+    assert [float(v) for v in ax.get_xticks()] == [0.0, 0.5, 1.0]
+    fig.canvas.draw()
+    assert len(ax.get_yticks()) > 0
+    assert len(ax.get_zticks()) > 0
+    plt.close(fig)
+
+
 @pytest.mark.parametrize(
     "overrides",
     [

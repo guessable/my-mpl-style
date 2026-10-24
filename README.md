@@ -132,7 +132,7 @@ rcParams written by the preset:
 ax_setting3D(
     ax,
     xlim, ylim, zlim,
-    xticks, yticks, zticks,
+    xticks=None, yticks=None, zticks=None,
     aspect="equal",
     box_aspect=None,
     xticks_pad=-5,
@@ -154,7 +154,7 @@ are preserved.
 | --- | --- | --- | --- |
 | `ax` | `Axes3D` | — | Axes created with `projection="3d"`. |
 | `xlim`, `ylim`, `zlim` | `Sequence[float]` | — | Axis limits. |
-| `xticks`, `yticks`, `zticks` | `Sequence[float]` | — | Tick positions for each axis. |
+| `xticks`, `yticks`, `zticks` | `Sequence[float] \| None` | `None` | Tick positions; `None` keeps matplotlib's default locator ticks. |
 | `aspect` | `"auto" \| "equal"` | `"equal"` | Data aspect. |
 | `box_aspect` | `Sequence[float] \| None` | `None` | Ratio of the axes box along x, y and z. |
 | `xticks_pad`, `yticks_pad` | `float` | `-5`, `-5` | Padding between the x/y axis and its tick labels, in points. |
