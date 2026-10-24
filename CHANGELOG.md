@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-10-24
+
+### Added
+
+- `ax_setting3D()` gains `box_on`, `ztick_length`, `xtick_length` and
+  `ytick_length`. Tick marks are projected and scaled to the longest axis, and
+  the z tick labels follow their tick endpoints.
+- Input validation for limits, ticks, tick lengths and `box_aspect`.
+- Private helpers moved to `my_mpl_style._utils`; `plot_rc` and
+  `ax_setting3D` remain the only public functions.
+
+### Changed
+
+- **Breaking:** `ax_setting3D()` no longer draws the separate grey back-edge
+  line; the box is drawn with pane outlines instead, controlled by `box_on`.
+- Requires matplotlib 3.10+ (for the mplot3d draw hooks) and NumPy 1.24+.
+
 ## [0.2.2] - 2026-10-20
 
 ### Added

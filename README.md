@@ -9,8 +9,8 @@ Two small helpers that give matplotlib figures a publication-ready look:
 - `plot_rc()` applies a consistent rcParams preset — serif fonts, Computer
   Modern math, a MATLAB-like colour cycle, optional grid and tick direction,
   plus 300 dpi / tight-bbox save defaults.
-- `ax_setting3D()` turns a 3D axes into a clean orthographic box with explicit
-  tick positions and a grey back edge.
+- `ax_setting3D()` turns a 3D axes into a MATLAB-like orthographic box with
+  explicit tick positions and projected tick marks.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Two small helpers that give matplotlib figures a publication-ready look:
 pip install my-mpl-style
 ```
 
-Requires Python 3.10+ and matplotlib 3.5+.
+Requires Python 3.10+, matplotlib 3.10+ and NumPy 1.24+.
 
 ## Quick start
 
@@ -74,8 +74,8 @@ plt.show()
 ```
 
 Ticks are passed to `ax_setting3D()` rather than set separately with
-`ax.set(xticks=...)`, so the grey back edge is computed after the final limits
-and ticks are known.
+`ax.set(xticks=...)`, so the projected tick marks and z labels are computed
+from the final limits and ticks.
 
 ## API
 
@@ -138,12 +138,17 @@ ax_setting3D(
     xticks_pad=-5,
     yticks_pad=-5,
     zticks_pad=0,
+    box_on=False,
+    ztick_length=0.02,
+    xtick_length=0.02,
+    ytick_length=0.02,
 )
 ```
 
-Makes the panes transparent, thins the grid and tick marks, aligns the tick
-labels next to their axes, sets the tick positions and limits, and draws the
-grey back edge of the box.
+Makes the panes transparent, thins the grid lines, sets the tick positions and
+limits, scales every tick to the longest projected axis, and places the z tick
+labels beyond their tick endpoints. X and y tick directions and label positions
+are preserved.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -152,7 +157,10 @@ grey back edge of the box.
 | `xticks`, `yticks`, `zticks` | `Sequence[float]` | — | Tick positions for each axis. |
 | `aspect` | `"auto" \| "equal"` | `"equal"` | Data aspect. |
 | `box_aspect` | `Sequence[float] \| None` | `None` | Ratio of the axes box along x, y and z. |
-| `xticks_pad`, `yticks_pad`, `zticks_pad` | `float` | `-5`, `-5`, `0` | Padding between axis and tick labels, in points. |
+| `xticks_pad`, `yticks_pad` | `float` | `-5`, `-5` | Padding between the x/y axis and its tick labels, in points. |
+| `zticks_pad` | `float` | `0` | Extra gap beyond each z tick endpoint; total gap is `max(0, 2 + zticks_pad)` points. |
+| `box_on` | `bool` | `False` | Use axis line colours for pane outlines instead of grey. |
+| `ztick_length`, `xtick_length`, `ytick_length` | `float` | `0.02` | Tick length as a fraction of the longest projected axis. |
 
 ## Development
 

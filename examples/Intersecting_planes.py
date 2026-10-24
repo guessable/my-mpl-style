@@ -83,7 +83,7 @@ if __name__ == "__main__":
     plot_ax(ax, a, 0.5, b, u2, "y", norm, cmap="plasma")
     plot_ax(ax, 0.5, a, b, u3, "x", norm, cmap="plasma")
 
-    cm = ScalarMappable(norm=norm)
+    cm = ScalarMappable(norm=norm, cmap="plasma")
     cb = fig.colorbar(cm, ax=ax, shrink=0.5, aspect=14)
     cb.set_label(r"$u_{\rm NN}$", fontsize=13, labelpad=2)
 

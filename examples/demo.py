@@ -25,7 +25,7 @@ from my_mpl_style import ax_setting3D, plot_rc  # noqa: E402
 
 
 def main(outfile: Path = ROOT / "docs" / "images" / "demo.png") -> None:
-    plot_rc(grid=True, tick_direction="in")
+    plot_rc()
 
     fig = plt.figure(figsize=(10, 4.2), dpi=150)
 

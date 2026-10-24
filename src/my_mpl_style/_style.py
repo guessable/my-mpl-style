@@ -1,18 +1,20 @@
-"""Core style helpers: global rcParams presets and 3D axes adjustments."""
+"""Public style helpers exported by :mod:`my_mpl_style`.
+
+Only :func:`plot_rc` and :func:`ax_setting3D` are defined here; their private
+machinery lives in :mod:`my_mpl_style._utils`.
+"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Sequence
+from typing import Literal, Sequence
 
 import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
-if TYPE_CHECKING:
-    from mpl_toolkits.mplot3d import Axes3D
+from ._utils import COLOR_ORDER, _AxisTickExtension, _ProjectedGeometry, _finite_scalar
 
 __all__ = ["plot_rc", "ax_setting3D"]
-
-#: Default colour cycle (MATLAB-like palette).
-COLOR_ORDER: tuple[str, ...] = ("#0072BD", "#D95319", "#7E2F8E", "#77AC30", "#4DBEEE", "#A2142F")
 
 
 def plot_rc(
@@ -118,16 +120,18 @@ def ax_setting3D(
     xticks_pad: float = -5,
     yticks_pad: float = -5,
     zticks_pad: float = 0,
+    box_on: bool = False,
+    ztick_length: float = 0.02,
+    xtick_length: float = 0.02,
+    ytick_length: float = 0.02,
 ) -> None:
-    """Style a 3D axes to look like a clean, orthogonal box.
+    """Style a 3D axes with a MATLAB-like view, box and tick marks.
 
-    The panes are made transparent, the grid and tick marks are thinned, the
-    out-of-plane back edge is drawn in grey, and the tick labels are aligned
-    so that they sit next to their axes.
-
-    Tick positions are passed in here rather than set with
-    ``ax.set(xticks=...)``, so that the limits, the ticks and the grey back
-    edge are all computed from the same final state of the axes.
+    The axes use orthographic projection and the MATLAB default 3D view.
+    Pane fills are removed and the grid lines are thinned. Tick lengths on
+    all three axes are scaled to the longest projected axis. X and y tick
+    directions and label positions are preserved. Z ticks extend along y,
+    with their numeric labels placed beyond the outer endpoints.
 
     Parameters
     ----------
@@ -138,11 +142,37 @@ def ax_setting3D(
     xticks, yticks, zticks : sequence of float
         Tick positions for each axis.
     aspect : {"auto", "equal"}, default: "equal"
-        Data aspect passed to :meth:`~matplotlib.axes.Axes.set_aspect`.
+        Data aspect passed to :meth:`~mpl_toolkits.mplot3d.axes3d.Axes3D.set_aspect`.
     box_aspect : sequence of float or None, default: None
         If given, the ratio of the axes box lengths along x, y and z.
-    xticks_pad, yticks_pad, zticks_pad : float, default: -5, -5, 0
-        Padding between each axis and its tick labels, in points.
+    xticks_pad, yticks_pad : float, default: -5
+        Padding between the x or y axis and its tick labels, in points.
+    zticks_pad : float, default: 0
+        Additional padding beyond each z tick's outer endpoint, in points.
+        The total gap is ``max(0, 2 + zticks_pad)`` points.
+    box_on : bool, default: False
+        If ``True``, use the axis line colours for the pane outlines.
+        Otherwise, draw the pane outlines in grey.
+    ztick_length, xtick_length, ytick_length : float, default: 0.02
+        Tick length on each axis as a fraction of the longest projected
+        axis. Lengths are recomputed whenever the axes are drawn.
+
+    Raises
+    ------
+    TypeError
+        If ``ax`` is not a 3D axes.
+    ValueError
+        If limits or ticks contain non-finite values, a tick length is
+        negative, or ``box_aspect`` does not contain three positive values.
+
+    Notes
+    -----
+    Tick directions and labels use private mplot3d draw hooks. The hooks
+    are reused when this function is called again on the same axes.
+    The y-direction override applies to the default tick position with z
+    as the vertical axis; other configurations retain their original direction.
+    Each subplot has its own geometry cache. Importing this module does not
+    create figures or change global plotting settings.
 
     Examples
     --------
@@ -151,7 +181,7 @@ def ax_setting3D(
     >>> from my_mpl_style import ax_setting3D
     >>> a = np.linspace(-1, 1, 50)
     >>> x, y = np.meshgrid(a, a)
-    >>> z = np.sin(np.pi * x) * np.exp(y)
+    >>> z = np.sin(np.pi * x) * np.cos(np.pi * y)
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(111, projection="3d")
     >>> ax.plot_surface(x, y, z)
@@ -159,56 +189,82 @@ def ax_setting3D(
     ...     ax,
     ...     (-1, 1),
     ...     (-1, 1),
-    ...     (z.min(), z.max()),
+    ...     (-1, 1),
     ...     xticks=[-1, 0, 1],
     ...     yticks=[-1, 0, 1],
-    ...     zticks=[-2, 0, 2],
+    ...     zticks=[-1, 0, 1],
+    ...     box_on=True,
+    ...     xtick_length=0.02,
+    ...     ytick_length=0.02,
+    ...     ztick_length=0.02,
+    ...     zticks_pad=2,
     ... )
     """
+    if not isinstance(ax, Axes3D):
+        raise TypeError("ax must be an Axes3D created with projection='3d'")
+    if aspect not in ("auto", "equal"):
+        raise ValueError("aspect must be 'auto' or 'equal'")
+    axes = (ax.xaxis, ax.yaxis, ax.zaxis)
+    if not all(hasattr(axis, "_draw_ticks") and hasattr(axis, "_get_tickdir") for axis in axes):
+        raise RuntimeError("This style requires the mplot3d drawing hooks in Matplotlib >= 3.10")
+    lengths = {
+        name: _finite_scalar(value, name + "tick_length", nonnegative=True)
+        for name, value in zip("xyz", (xtick_length, ytick_length, ztick_length))
+    }
+    pads = [_finite_scalar(value, name + "ticks_pad") for name, value in zip("xyz", (xticks_pad, yticks_pad, zticks_pad))]
+    limits, ticks = {}, {}
+    for name, bounds, values in zip("xyz", (xlim, ylim, zlim), (xticks, yticks, zticks)):
+        bounds = np.asarray(bounds, dtype=float)
+        values = np.asarray(values, dtype=float)
+        if bounds.shape != (2,) or not np.isfinite(bounds).all():
+            raise ValueError(f"{name}lim must contain two finite values")
+        if values.ndim != 1 or not np.isfinite(values).all():
+            raise ValueError(f"{name}ticks must be a one-dimensional finite sequence")
+        limits[name], ticks[name] = bounds.copy(), values.copy()
+    if box_aspect is not None:
+        box_aspect = np.array(box_aspect, dtype=float, copy=True)
+        if box_aspect.shape != (3,) or not np.isfinite(box_aspect).all() or np.any(box_aspect <= 0):
+            raise ValueError("box_aspect must contain three finite positive values")
+
     ax.set_proj_type("ortho")
     ax.view_init(elev=30, azim=-127.5)
-    ax.tick_params(axis="x", pad=xticks_pad)
-    ax.tick_params(axis="y", pad=yticks_pad)
-    ax.tick_params(axis="z", pad=zticks_pad)
+    for name, pad in zip("xyz", pads):
+        ax.tick_params(axis=name, pad=pad)
 
-    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+    for axis in axes:
         axis._axinfo["grid"]["linewidth"] = 0.2
         axis._axinfo["tick"]["inward_factor"] = 0.2
         axis._axinfo["tick"]["outward_factor"] = 0.0
-        axis.pane.set_edgecolor("gray")
         axis.pane.fill = False
+        axis.pane.set_closed(True)
+        axis.pane.set_alpha(None)
+        axis.pane.set_linewidth(axis.line.get_linewidth())
+        axis.pane.set_edgecolor(axis.line.get_color() if box_on else "gray")
 
-    for tick in ax.xaxis.get_ticklabels():
-        tick.set_horizontalalignment("left")
-    for tick in ax.yaxis.get_ticklabels():
-        tick.set_horizontalalignment("right")
-    for tick in ax.zaxis.get_ticklabels():
-        tick.set_verticalalignment("center_baseline")
-
-    ax.set(xlim=xlim, ylim=ylim, zlim=zlim, aspect=aspect, xticks=xticks, yticks=yticks, zticks=zticks)
+    # Set ticks first: Matplotlib otherwise expands explicit limits to fit them.
+    for name, axis in zip("xyz", axes):
+        axis.set_ticks(ticks[name])
+        getattr(ax, "set_" + name + "lim")(limits[name])
+    ax.set_aspect(aspect)
     if box_aspect is not None:
-        ax.set(box_aspect=box_aspect)
+        ax.set_box_aspect(box_aspect)
 
-    from matplotlib.lines import Line2D
-    from mpl_toolkits.mplot3d import proj3d
+    # Avoid get_ticklabels() here: it assigns raw tick values as temporary 2D
+    # positions before the first draw, which can upset constrained_layout.
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_ha("left")
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label1.set_ha("right")
+    for tick in ax.zaxis.get_major_ticks():
+        tick.label1.set_va("center_baseline")
 
-    fig = ax.figure
-    fig.canvas.draw()
-    ax.M = ax.get_proj()
-
-    x1, y0 = ax.get_xlim()[1], ax.get_ylim()[0]
-    z0, z1 = ax.get_zlim()
-    ends = [fig.transFigure.inverted().transform(ax.transData.transform(proj3d.proj_transform(x1, y0, z, ax.M)[:2])) for z in (z0, z1)]
-
-    if hasattr(ax, "_box_edge"):
-        ax._box_edge.remove()
-    ax._box_edge = Line2D(
-        [ends[0][0], ends[1][0]],
-        [ends[0][1], ends[1][1]],
-        transform=fig.transFigure,
-        color="gray",
-        lw=0.9,
-        zorder=1000,
-        alpha=0.6,
-    )
-    fig.add_artist(ax._box_edge)
+    geometry = getattr(ax, "_style3d_geometry", None)
+    if not isinstance(geometry, _ProjectedGeometry):
+        geometry = ax._style3d_geometry = _ProjectedGeometry(ax)
+    geometry.matrix = None
+    for name, length in lengths.items():
+        axis = getattr(ax, name + "axis")
+        if isinstance(axis._draw_ticks, _AxisTickExtension):
+            axis._draw_ticks.length = length
+        else:
+            axis._draw_ticks = _AxisTickExtension(axis, length, geometry)
